@@ -1,3 +1,5 @@
+#!/usr/bin/env python
+
 import os
 import tarfile
 import argparse
@@ -38,7 +40,7 @@ with open(texname,'r') as f:
                 filename = filename + "." + fileformat
                 if os.path.isfile(texdir+filename):
                     print("adding " + filename + " to " + figtar.name.split('/')[-1])
-                    figtar.addfile(tarfile.TarInfo(filename), file(texdir+filename))
+                    figtar.add(texdir+filename, arcname=filename)
                 else:
                     print(filename + " not found, skipping ")
 
@@ -47,11 +49,12 @@ with open(texname,'r') as f:
                 if os.path.isfile(texdir+filename + ".eps"):
                     filename += ".eps"
                     print("adding " + filename + " to " + figtar.name.split('/')[-1])
-                    figtar.addfile(tarfile.TarInfo(filename), file(texdir+filename))
+                    print(texdir+filename)
+                    figtar.add(texdir+filename, arcname=filename)
                 elif os.path.isfile(texdir+filename + ".pdf"):
                     filename += ".pdf"
                     print("adding " + filename + " to " + figtar.name.split('/')[-1])
-                    figtar.addfile(tarfile.TarInfo(filename), file(texdir+filename))
+                    figtar.add(texdir+filename, arcname=filename)
                 else:
                     print(texdir+filename + " not found as an eps of pdf, skipping ")
 
@@ -60,8 +63,8 @@ with open(texname,'r') as f:
             filename = line.split("{")[1]
             filename = filename.replace("./","").replace("}","").replace("\n","") + ".bib"
             print("adding " + filename + " to " + figtar.name.split('/')[-1])
-            figtar.addfile(tarfile.TarInfo(filename), file(texdir+filename))
+            figtar.add(texdir+filename, arcname='./')
 
-print("adding " + texname + " to " + figtar.name.split('/')[-1])
-figtar.addfile(tarfile.TarInfo(texname.split('/')[-1]), file(texname))
+print("adding " + texname.split('/')[-1] + " to " + figtar.name.split('/')[-1])
+figtar.add(texname, arcname=texname.split('/')[-1])
 figtar.close
