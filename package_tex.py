@@ -4,26 +4,39 @@ import os
 import tarfile
 import argparse
 
+def get_figurename(line):
+    return (line.split("{")[1]
+            .replace("./","")
+            .replace("}","")
+            .replace("\n",""))
+
 #Setup agument parser
 parser = argparse.ArgumentParser()
 parser.add_argument("texname", help="Name of the tex file")
 parser.add_argument("-t", "--tarname", help="Name of the tar file")
 parser.add_argument("-f", "--format", help="Preferred Format of figures to package (default eps)")
 args = parser.parse_args()
-texname = args.texname
+
+#Get tex file and path to tex file
+texpath = args.texname
+texname = texpath.split('/')[-1]
 
 #Get location of tex file
-texdir = os.path.dirname(os.path.realpath(texname))+"/"
+texdir = os.path.dirname(os.path.realpath(texpath))+"/"
 
 #Create tarball
 if args.tarname:
     tarname = args.tarname
 else:
-    tarname = texname.split('/')[-1]+'_packaged.tar'
+    tarname = texname+'_packaged.tar'
 figtar = tarfile.open(tarname, mode='w')
 
+#Function to print filename and tarname
+def printadd(name):
+    print("adding " + name + " to " + figtar.name.split('/')[-1])
+
 #Parse latex file and add files
-with open(texname,'r') as f:
+with open(texpath,'r') as f:
     for line in f:
 
         #Skip Commented figures
@@ -32,14 +45,13 @@ with open(texname,'r') as f:
 
         #Add all figures to tarball
         if "\includegraphics" in line:
-            filename = line.split("{")[1]
-            filename = filename.replace("./","").replace("}","").replace("\n","")
+            filename = get_figurename(line)
             #If preferred format specified
             if args.format:
                 fileformat = args.format
                 filename = filename + "." + fileformat
                 if os.path.isfile(texdir+filename):
-                    print("adding " + filename + " to " + figtar.name.split('/')[-1])
+                    printadd(filename)
                     figtar.add(texdir+filename, arcname=filename)
                 else:
                     print(filename + " not found, skipping ")
@@ -48,23 +60,22 @@ with open(texname,'r') as f:
             else:
                 if os.path.isfile(texdir+filename + ".eps"):
                     filename += ".eps"
-                    print("adding " + filename + " to " + figtar.name.split('/')[-1])
+                    printadd(filename)
                     print(texdir+filename)
                     figtar.add(texdir+filename, arcname=filename)
                 elif os.path.isfile(texdir+filename + ".pdf"):
                     filename += ".pdf"
-                    print("adding " + filename + " to " + figtar.name.split('/')[-1])
+                    printadd(filename)
                     figtar.add(texdir+filename, arcname=filename)
                 else:
                     print(texdir+filename + " not found as an eps of pdf, skipping ")
 
         #Add bibtex files to tarball
         if "\bibliography" in line:
-            filename = line.split("{")[1]
-            filename = filename.replace("./","").replace("}","").replace("\n","") + ".bib"
-            print("adding " + filename + " to " + figtar.name.split('/')[-1])
+            filename = get_figurename(line)  + ".bib"
+            printadd(filename)
             figtar.add(texdir+filename, arcname='./')
 
-print("adding " + texname.split('/')[-1] + " to " + figtar.name.split('/')[-1])
-figtar.add(texname, arcname=texname.split('/')[-1])
+printadd(texname)
+figtar.add(texpath, arcname=texname)
 figtar.close
