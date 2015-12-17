@@ -11,7 +11,7 @@ class packagetex:
         #Check file exists and if tex file
         if os.path.isfile(texpath):
             #Check extension
-            assert texpath.find(".tex") == True
+            assert texpath.find(".tex") != -1
         else:
             print("Tex file " + texpath + " does not exist or is not found")
             raise IOError
