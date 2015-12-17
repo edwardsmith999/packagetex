@@ -11,11 +11,11 @@ class packagetex:
         #Check file exists and if tex file
         if os.path.isfile(texpath):
             #Check extension
-            if texpath.find(".tex") != -1:
+            if texpath.find(".tex") == -1:
                 print("File format does not appear to be tex (should have extension .tex)")
         else:
-            print("Tex file " + texpath + " does not exist or is not found")
-            raise IOError
+            msg = "Tex file " + texpath + " does not exist or is not found"
+            raise IOError(msg)
 
         self.texname = texpath.split('/')[-1]
         self.tarname = tarname
