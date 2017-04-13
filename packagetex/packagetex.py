@@ -28,7 +28,8 @@ class packagetex:
         return (line.split("{")[1]
                 .replace("./","")
                 .replace("}","")
-                .replace("\n",""))
+                .replace("\n","")
+                .replace("\r",""))
 
     #Function to print filename and tarname
     def printadd(self, name):
@@ -51,7 +52,7 @@ class packagetex:
                     continue
 
                 #Add all figures to tarball
-                if "\includegraphics" in line:
+                if r"\includegraphics" in line:
                     filename = self.get_figurename(line)
                     #If preferred format specified
                     if self.figformat:
@@ -78,10 +79,15 @@ class packagetex:
                             print(texdir+filename + " not found as an eps of pdf, skipping ")
 
                 #Add bibtex files to tarball
-                if "\bibliography" in line:
+                if r"\bibliography" in line:
+                    if r"\bibliographystyle" in line:
+                        continue
                     filename = self.get_figurename(line)  + ".bib"
-                    self.printadd(filename)
-                    figtar.add(texdir+filename, arcname='./')
+                    if os.path.isfile(texdir+filename):
+                        self.printadd(filename)
+                        figtar.add(texdir+filename, arcname=filename)
+                    else:
+                        print(filename + " not found, skipping ")
 
         #Add tex file itself
         self.printadd(self.texname)
